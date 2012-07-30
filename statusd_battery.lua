@@ -90,7 +90,13 @@ function update_battery()
     end
     blink_phase_blank = not blink_phase_blank
   end
-  statusd.inform('battery', string.format('[ %s ]', blinking_info))
+  local display
+  if info:len() > 0 then
+    display = string.format('[ %s ]', blinking_info)
+  else
+    display = ""
+  end
+  statusd.inform('battery', display)
   statusd.inform('battery_hint', hint)
   prev_info = info
   battery_timer:set(interval, update_battery)
