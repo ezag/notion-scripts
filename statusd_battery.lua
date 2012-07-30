@@ -1,13 +1,19 @@
 local defaults = {
-  update_interval = 1 * 1000,
+  update_interval = 2 * 1000,
   bat_no = 1,
   thresholds = {
     full        = {  0,   0,   0,   0},
     charging    = {  4,  22,  67, 100},
     discharging = {  6,  16,  40, 100},
-  }
+  },
+  blink_on = 1750,
+  blink_off = 250,
 }
 local settings = table.join(statusd.get_config('battery'), defaults)
+
+local blink_phase_blank = false
+local do_blink = false
+local prev_info
 
 local function getsysbase()
   if settings.bat_no then
@@ -60,19 +66,34 @@ function update_battery()
   local info
   local hint
   if threshold then
-    info = string.format("[ %.f%% %s ]", percentage, status)
+    info = string.format("%.f%% %s", percentage, status)
     if threshold == 'blink' then
       hint = 'critical'
+      do_blink = true
     else
       hint = threshold
+      do_blink = false
     end
   else
     info = ""
     hint = 'normal'
   end
-  statusd.inform('battery', info)
+  local interval = settings.update_interval
+  local blinking_info = info
+  if do_blink or blink_phase_blank or
+     (status == 'discharging' and prev_info and info ~= prev_info) then
+    if blink_phase_blank then
+      interval = settings.blink_on
+    else
+      blinking_info = string.rep(" ", info:len())
+      interval = settings.blink_off
+    end
+    blink_phase_blank = not blink_phase_blank
+  end
+  statusd.inform('battery', string.format('[ %s ]', blinking_info))
   statusd.inform('battery_hint', hint)
-  battery_timer:set(settings.update_interval, update_battery)
+  prev_info = info
+  battery_timer:set(interval, update_battery)
 end
 
 battery_timer = statusd.create_timer()
