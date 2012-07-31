@@ -32,10 +32,6 @@ local function energy_full() return read_value('energy_full') end
 local function energy_now() return read_value('energy_now') end
 local function status() return read_value('status', '*l', string.lower) end
 
-local function energy_percentage()
-  return energy_now() * 100 / energy_full()
-end
-
 local function effective_threshold(status, percentage)
   matched_threshold = nil
   for k, v in ipairs(settings.thresholds[status]) do
@@ -48,25 +44,25 @@ local function effective_threshold(status, percentage)
   return thresholds[matched_threshold]
 end
 
-function update_battery()
-  local percentage = energy_percentage()
+local function get_info()
+  local percentage = energy_now() * 100 / energy_full()
   local status = status()
   local threshold = effective_threshold(status, percentage)
-
-  -- Set info and hint according to effective threshold
-  local info = ""
-  local hint = 'normal'
+  local info, hint, blink = "", 'normal', false
   if threshold then
     info = string.format("%.f%% %s", percentage, status)
     if threshold == 'blink' then
       hint = 'critical'
-      do_blink = true
+      blink = true
     else
       hint = threshold
-      do_blink = false
     end
   end
+  return info, hint, blink
+end
 
+function update_battery()
+  info, hint, do_blink = get_info()
   local interval = settings.update_interval
   local blinking_info = info
   if do_blink or blink_phase_blank or
