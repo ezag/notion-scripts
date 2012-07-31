@@ -72,7 +72,7 @@ local defaults = {
   --
   -- blink_pattern = {1000, 1000} -- one second off, one second on
   -- blink_pattern = {150, 1750}  -- short off, long on
-  -- blinn_pattern = {100, 100, 100, 100, 100, 100,  -- strobo each
+  -- blink_pattern = {100, 100, 100, 100, 100, 100,  -- strobo each
   --                  100, 100, 100, 100, 10000}     -- 10 seconds
   blink_pattern = {125, 250, 125, 1500},
 
