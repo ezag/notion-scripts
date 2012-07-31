@@ -225,7 +225,7 @@ local function get_info()
   --   * current battery status (full, charging, discharging).
   local data = {percentage = percentage(), status = status()}
   local threshold = effective_threshold(data.status, data.percentage)
-  local info, hint, blink = "", 'normal', false
+  local info, hint, blink = nil, 'normal', false
   if threshold then
     local display_data = {}
     for k, v in ipairs(settings.info_data) do
@@ -249,9 +249,9 @@ end
 local function render_content(info, is_blank)
   -- Construct string to display (wrapped) respecting blink phase (blank
   -- or not).
-  return settings.content_format:format(
+  return info and settings.content_format:format(
     is_blank and string.rep(" ", info:len()) or info
-  )
+  ) or ""
 end
 
 function update_battery(old_info, is_blank, next_phases)
