@@ -2,9 +2,9 @@ local defaults = {
   update_interval = 2 * 1000,
   bat_no = 1,
   thresholds = {
-    full        = {  0,   0,   0,   0},
-    charging    = {  4,  22,  67, 100},
-    discharging = {  6,  16,  40, 100},
+      full        = {  0,   0,   0,   0},
+      charging    = {  0,   0,   6, 100},
+      discharging = { 12,  25,  50, 100},
   },
   blink_pattern = {125, 250, 125, 1500}
 }
