@@ -10,6 +10,7 @@ local defaults = {
   info_data = {'percentage', 'status'},
   info_format = "%.f%% %s",
   content_format = "[ %s ]",
+  blink_on_discharge = true,
 }
 local settings = table.join(statusd.get_config('battery'), defaults)
 
@@ -80,7 +81,7 @@ end
 function update_battery(old_info, is_blank, next_phases)
   local next_phases = next_phases or {}
   local info, hint, should_blink, status = get_info()
-  should_blink = should_blink or
+  should_blink = should_blink or settings.blink_on_discharge and
                  status == 'discharging' and old_info and info ~= old_info
   if should_blink and #next_phases == 0 then
     for k, v in ipairs(settings.blink_pattern) do next_phases[k] = v end
