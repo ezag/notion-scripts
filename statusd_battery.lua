@@ -1,15 +1,73 @@
 local defaults = {
-  update_interval = 2 * 1000,
-  bat_no = nil,
-  thresholds = {
-      full        = {  0,   0,   0,   0},
-      charging    = {  0,   0,   6, 100},
-      discharging = { 12,  25,  50, 100},
+  -- Data to display; any value may be ommited or listed multiple times.
+  info_data = {
+    -- Number within range of 0..100 indicating current battery level.
+    -- Note that value is not rounded; use format options (below) to
+    -- drop unwanted decimal digits.
+    'percentage',  
+    -- String representing battery status: full, charging or
+    -- discharging.
+    'status',
   },
-  blink_pattern = {125, 250, 125, 1500},
-  info_data = {'percentage', 'status'},
+
+  -- Format string used to display data. Number and order of
+  -- placeholders should correspond to 'info_data'. Some examples:
+  --
+  -- info_data = {'percentage'}  -- show only percentage with
+  -- info_format = "%.2f"        -- precision of 2 decimal digits
+  --
+  -- info_data = {'status', 'percentage'}  -- verbose one
+  -- info_format = "Battery is %s, level is %.f percent"
+  --
+  -- info_data = {'status', 'status'}  -- show both rounded and exact
+  -- info_format = "%.f (exact: %f)"   -- percentages
   info_format = "%.f%% %s",
+
+  -- Format string used to wrap data; doesn't dissappear while
+  -- blinking. This allows to keep place and to avoid statusbar content
+  -- flickering. Beware of hanging whitespaces - they will be stripped.
   content_format = "[ %s ]",
+
+  -- Update interval in milliseconds.
+  update_interval = 2 * 1000,
+
+  -- Number of battery, will attempt to autodetect if not set.
+  bat_no = nil,
+
+  -- Percentage thresholds:
+  --
+  --   1) blink     - if value drops below specified threshold,
+  --                  statusbar starts to blink;
+  --   2) critical  - threshold for 'critical' hint;
+  --   3) important - 'important' hint;
+  --   4) normal    - if value is greater than specified one, nothing
+  --                  is displayed at all.
+  --
+  -- Each battery status has separate set of thresholds. Values
+  -- of 0 or 100 may be used to disable some thresholds for some
+  -- battery statuses.
+  --
+  -- Note that full table should be specified in order to override
+  -- default settings, partial specification will not work:
+  --
+  -- thresholds = {charging = {0, 0, 0, 0}}  -- *not allowed*
+  thresholds = {
+    full        = {  0,   0,   0,   0},
+    charging    = {  0,   0,   6, 100},
+    discharging = { 12,  25,  50, 100},
+  },
+
+  -- Intervals in milliseconds which define blink pattern. Should be of
+  -- even length, otherwise blinking will be unpredictale. Examples:
+  --
+  -- blink_pattern = {1000, 1000} -- one second off, one second on
+  -- blink_pattern = {150, 1750}  -- short off, long on
+  -- blinn_pattern = {100, 100, 100, 100, 100, 100,  -- strobo each
+  --                  100, 100, 100, 100, 10000}     -- 10 seconds
+  blink_pattern = {125, 250, 125, 1500},
+
+  -- If set to true, indicator will blink once each time when info is
+  -- updated during discharging.
   blink_on_discharge = true,
 }
 local settings = table.join(statusd.get_config('battery'), defaults)
