@@ -161,7 +161,12 @@ local defaults = {
 }
 local settings = table.join(statusd.get_config('battery'), defaults)
 
+--
+-- Platform dependent part follows. In order to add support for additional
+-- platforms one needs to enhance 'percentage' and 'status' functions below.
+--
 local function getsysbase()
+  -- Return path to directory in /sys/ containing battery info.
   local path
   if settings.bat_no then
     path = '/sys/class/power_supply/BAT' .. settings.bat_no
@@ -175,16 +180,30 @@ end
 local sysbase = getsysbase()
 
 local function read_value(name, mode, postprocess)
+  -- File reading routite, just to avoid copying & pasting.
   local f = assert(io.open(sysbase .. name))
   local value = f:read(mode or '*n')
   f:close()
   return postprocess and postprocess(value) or value
 end
-local function energy_full() return read_value('energy_full') end
-local function energy_now() return read_value('energy_now') end
-local function status() return read_value('status', '*l', string.lower) end
+
+local function percentage()
+  -- Return number indicating battery level percentage
+  return read_value('energy_now') * 100 / read_value('energy_full')
+end
+
+local function status()
+  -- Return string indicating battery status. Valid values are "full",
+  -- "charging" and "discharging".
+  return read_value('status', '*l', string.lower)
+end
+--
+-- End of platform dependent part.
+--
 
 local function effective_threshold(status, percentage)
+  -- Return threshold being hit depending on battery status, level and
+  -- settings. Valid values are "blink", "critical", "important", "normal".
   matched_threshold = nil
   for k, v in ipairs(settings.thresholds[status]) do
     if percentage <= v then
@@ -197,10 +216,12 @@ local function effective_threshold(status, percentage)
 end
 
 local function get_info()
-  local data = {
-    percentage = energy_now() * 100 / energy_full(),
-    status = status(),
-  }
+  -- Return data required for displaying indicator:
+  --   * string to display (not wrapped),
+  --   * statusd hint (normal, importamt, critical),
+  --   * bool determining if indicator should blink,
+  --   * current battery status (full, charging, discharging).
+  local data = {percentage = percentage(), status = status()}
   local threshold = effective_threshold(data.status, data.percentage)
   local info, hint, blink = "", 'normal', false
   if threshold then
@@ -224,6 +245,8 @@ local function get_info()
 end
 
 local function render_content(info, is_blank)
+  -- Construct string to display (wrapped) respecting blink phase (blank
+  -- or not).
   return settings.content_format:format(
     is_blank and string.rep(" ", info:len()) or info
   )
