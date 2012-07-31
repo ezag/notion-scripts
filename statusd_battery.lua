@@ -22,26 +22,15 @@ local function getsysbase()
 end
 local sysbase = getsysbase()
 
-local function energy_full()
-  local f = assert(io.open(sysbase .. 'energy_full'))
-  local value = f:read('*n')
+local function read_value(name, mode, postprocess)
+  local f = assert(io.open(sysbase .. name))
+  local value = f:read(mode or '*n')
   f:close()
-  return value
+  return postprocess and postprocess(value) or value
 end
-
-local function energy_now()
-  local f = assert(io.open(sysbase .. 'energy_now'))
-  local value = f:read('*n')
-  f:close()
-  return value
-end
-
-local function status()
-  local f = assert(io.open(sysbase .. 'status'))
-  local value = f:read()
-  f:close()
-  return value:lower()
-end
+local function energy_full() return read_value('energy_full') end
+local function energy_now() return read_value('energy_now') end
+local function status() return read_value('status', '*l', string.lower) end
 
 local function energy_percentage()
   return energy_now() * 100 / energy_full()
@@ -63,8 +52,10 @@ function update_battery()
   local percentage = energy_percentage()
   local status = status()
   local threshold = effective_threshold(status, percentage)
-  local info
-  local hint
+
+  -- Set info and hint according to effective threshold
+  local info = ""
+  local hint = 'normal'
   if threshold then
     info = string.format("%.f%% %s", percentage, status)
     if threshold == 'blink' then
@@ -74,10 +65,8 @@ function update_battery()
       hint = threshold
       do_blink = false
     end
-  else
-    info = ""
-    hint = 'normal'
   end
+
   local interval = settings.update_interval
   local blinking_info = info
   if do_blink or blink_phase_blank or
