@@ -40,8 +40,8 @@ following settings:
     blink_on_discharge = false,
   }
 
-Or, say, to resemble it's linuxbatt_status for indicating whether battery
-is charging or discharging:
+Or, say, to resemble indicating whether battery is charging or discharging
+(linuxbatt_status):
 
   settings = {
     info_data = {'status', 'percentage'},
@@ -55,7 +55,7 @@ settings will provide following features:
 
   * Separate thresholds for different battery statuses (charging or
     discharging - charging at 15% doesn't require as much attention as
-    discharginf at the same level.
+    discharging at the same level.
 
   * Indicator hides itself when the battery is full - no need to distract
     user and occupy statusbar space when fully charged. Hiding conditions
