@@ -6,14 +6,9 @@ local defaults = {
     charging    = {  4,  22,  67, 100},
     discharging = {  6,  16,  40, 100},
   },
-  blink_on = 1750,
-  blink_off = 250,
+  blink_pattern = {250, 1750},
 }
 local settings = table.join(statusd.get_config('battery'), defaults)
-
-local blink_phase_blank = false
-local do_blink = false
-local prev_info
 
 local function getsysbase()
   if settings.bat_no then
@@ -61,30 +56,31 @@ local function get_info()
   return info, hint, blink
 end
 
-function update_battery()
-  info, hint, do_blink = get_info()
-  local interval = settings.update_interval
-  local blinking_info = info
-  if do_blink or blink_phase_blank or
-     (status == 'discharging' and prev_info and info ~= prev_info) then
-    if blink_phase_blank then
-      interval = settings.blink_on
-    else
-      blinking_info = string.rep(" ", info:len())
-      interval = settings.blink_off
+local function render_content(info, is_blank)
+  return string.format(
+    "[ %s ]",
+    is_blank and string.rep(" ", info:len()) or info
+  )
+end
+
+function update_battery(is_blank, next_phases)
+  next_phases = next_phases or {}
+  info, hint, should_blink = get_info()
+  if should_blink and #next_phases == 0 then
+    for k, v in ipairs(settings.blink_pattern) do
+      next_phases[k] = v
     end
-    blink_phase_blank = not blink_phase_blank
   end
-  local display
-  if info:len() > 0 then
-    display = string.format('[ %s ]', blinking_info)
-  else
-    display = ""
+  local interval
+  if #next_phases ~= 0 then
+    is_blank = not is_blank
+    interval = table.remove(next_phases, 1)
   end
-  statusd.inform('battery', display)
+  statusd.inform('battery', render_content(info, is_blank))
   statusd.inform('battery_hint', hint)
-  prev_info = info
-  battery_timer:set(interval, update_battery)
+  battery_timer:set(interval or settings.update_interval, function ()
+    return update_battery(is_blank, next_phases)
+  end)
 end
 
 battery_timer = statusd.create_timer()
