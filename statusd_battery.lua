@@ -10,6 +10,16 @@ local defaults = {
     'status',
   },
 
+  -- Customize battery status representation. Example (resembling
+  -- statusd_linuxbatt behaviour):
+  --
+  -- status_display = {full = " ", charging = "+", discharging = "-"}
+  status_display = {
+    full        = "full",
+    charging    = "charging",
+    discharging = "discharging",
+  },
+
   -- Format string used to display data. Number and order of
   -- placeholders should correspond to 'info_data'. Some examples:
   --
@@ -117,7 +127,11 @@ local function get_info()
   if threshold then
     local display_data = {}
     for k, v in ipairs(settings.info_data) do
-      display_data[k] = data[v]
+      display = data[v]
+      if v == 'status' then
+        display = settings.status_display[display]
+      end
+      display_data[k] = display
     end
     info = settings.info_format:format(unpack(display_data))
     if threshold == 'blink' then
