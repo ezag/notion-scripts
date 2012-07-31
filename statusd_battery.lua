@@ -7,6 +7,7 @@ local defaults = {
       discharging = { 12,  25,  50, 100},
   },
   blink_pattern = {125, 250, 125, 1500},
+  info_data = {'percentage', 'status'},
   info_format = "%.f%% %s",
   content_format = "[ %s ]",
 }
@@ -42,12 +43,18 @@ local function effective_threshold(status, percentage)
 end
 
 local function get_info()
-  local percentage = energy_now() * 100 / energy_full()
-  local status = status()
-  local threshold = effective_threshold(status, percentage)
+  local data = {
+    percentage = energy_now() * 100 / energy_full(),
+    status = status(),
+  }
+  local threshold = effective_threshold(data.status, data.percentage)
   local info, hint, blink = "", 'normal', false
   if threshold then
-    info = settings.info_format:format(percentage, status)
+    local display_data = {}
+    for k, v in ipairs(settings.info_data) do
+      display_data[k] = data[v]
+    end
+    info = settings.info_format:format(unpack(display_data))
     if threshold == 'blink' then
       hint = 'critical'
       blink = true
@@ -55,7 +62,7 @@ local function get_info()
       hint = threshold
     end
   end
-  return info, hint, blink, status
+  return info, hint, blink, data.status
 end
 
 local function render_content(info, is_blank)
