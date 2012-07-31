@@ -1,3 +1,82 @@
+--[[ statusd_batttery.lua - battery status indicator for notion WM
+
+Copyright (c) 2012 Eugen Zagorodniy <e dot zagorodniy at gmail dot com>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+
+Created as a replacement for various outdated scripts, in particular
+for statusd_linuxbatt. It provides very flexible configuration - say, it's
+possible to resemble default statusd_linuxbatt behavuior using following
+settings:
+
+  settings = {
+    info_data = {'percentage'},
+    info_format = "%.f",
+    content_format = "%s",
+    update_interval = 15 * 1000,
+    bat_no = 0,
+    thresholds = {
+      full        = {0, 10, 30, 100},
+      charging    = {0, 10, 30, 100},
+      discharging = {0, 10, 30, 100},
+    },
+    blink_on_discharge = false,
+  }
+
+Or, say, to resemble it's linuxbatt_status for indicating whether battery
+is charging or discharging:
+
+  settings = {
+    info_data = {'status', 'percentage'},
+    info_format = "(%s) %.f%%",
+    status_display = {full = " ", charging = "+", discharging = "-"},
+    -- (the rest unchanged)
+  }
+
+However such a large configs are for demonstration purposes only. Default
+settings will provide following features:
+
+  * Separate thresholds for different battery statuses (charging or
+    discharging - charging at 15% doesn't require as much attention as
+    discharginf at the same level.
+
+  * Indicator hides itself when the battery is full - no need to distract
+    user and occupy statusbar space when fully charged. Hiding conditions
+    are configurable.
+
+  * When battery level is too low, indicator starts to blink drawing user
+    attention; configurable as well.
+
+  * Also it blinks once when status changes from "charging" to
+    "discharging" and occasionaly when battery level drops.
+
+  * Blinking is adjustable - find out the most comfortable pattern... or
+    the least annoying one.
+
+  * Probably no one is going to need this, but it is possible to display
+    battery level percentage with different precision - like 70%, 72%,
+    71.8%, 71.814%... and so on.
+  
+Please follow to settings description below for futher details.
+
+]]
 local defaults = {
   -- Data to display; any value may be ommited or listed multiple times.
   info_data = {
