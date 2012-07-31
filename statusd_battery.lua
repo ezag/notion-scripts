@@ -22,8 +22,8 @@ SOFTWARE.
 
 
 Created as a replacement for various outdated scripts, in particular
-for statusd_linuxbatt [1]. It provides very flexible configuration - say,
-it is possible to resemble default statusd_linuxbatt behaviuor using
+for statusd_linuxbatt [1]. This script provides very flexible configuration
+- say, it is possible to resemble default statusd_linuxbatt behaviuor using
 following settings:
 
   settings = {
