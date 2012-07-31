@@ -1,6 +1,6 @@
 local defaults = {
   update_interval = 2 * 1000,
-  bat_no = 1,
+  bat_no = nil,
   thresholds = {
       full        = {  0,   0,   0,   0},
       charging    = {  0,   0,   6, 100},
@@ -14,9 +14,15 @@ local defaults = {
 local settings = table.join(statusd.get_config('battery'), defaults)
 
 local function getsysbase()
+  local path
   if settings.bat_no then
-    return '/sys/class/power_supply/BAT' .. settings.bat_no .. '/'
+    path = '/sys/class/power_supply/BAT' .. settings.bat_no
+  else
+    local p = io.popen('ls -d /sys/class/power_supply/BAT* | head -n1')
+    path = p:read()
+    p:close()
   end
+  return path .. '/'
 end
 local sysbase = getsysbase()
 
