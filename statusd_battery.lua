@@ -64,14 +64,12 @@ local function render_content(info, is_blank)
 end
 
 function update_battery(old_info, is_blank, next_phases)
-  next_phases = next_phases or {}
+  local next_phases = next_phases or {}
   local info, hint, should_blink, status = get_info()
   should_blink = should_blink or
                  status == 'discharging' and old_info and info ~= old_info
   if should_blink and #next_phases == 0 then
-    for k, v in ipairs(settings.blink_pattern) do
-      next_phases[k] = v
-    end
+    for k, v in ipairs(settings.blink_pattern) do next_phases[k] = v end
   end
   local interval
   if #next_phases ~= 0 then
@@ -84,6 +82,5 @@ function update_battery(old_info, is_blank, next_phases)
     return update_battery(info, is_blank, next_phases)
   end)
 end
-
 battery_timer = statusd.create_timer()
 update_battery()
