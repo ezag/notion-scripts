@@ -6,7 +6,7 @@ local defaults = {
     charging    = {  4,  22,  67, 100},
     discharging = {  6,  16,  40, 100},
   },
-  blink_pattern = {250, 1750},
+  blink_pattern = {125, 250, 125, 1500}
 }
 local settings = table.join(statusd.get_config('battery'), defaults)
 
@@ -53,7 +53,7 @@ local function get_info()
       hint = threshold
     end
   end
-  return info, hint, blink
+  return info, hint, blink, status
 end
 
 local function render_content(info, is_blank)
@@ -63,9 +63,11 @@ local function render_content(info, is_blank)
   )
 end
 
-function update_battery(is_blank, next_phases)
+function update_battery(old_info, is_blank, next_phases)
   next_phases = next_phases or {}
-  info, hint, should_blink = get_info()
+  local info, hint, should_blink, status = get_info()
+  should_blink = should_blink or
+                 status == 'discharging' and old_info and info ~= old_info
   if should_blink and #next_phases == 0 then
     for k, v in ipairs(settings.blink_pattern) do
       next_phases[k] = v
@@ -79,7 +81,7 @@ function update_battery(is_blank, next_phases)
   statusd.inform('battery', render_content(info, is_blank))
   statusd.inform('battery_hint', hint)
   battery_timer:set(interval or settings.update_interval, function ()
-    return update_battery(is_blank, next_phases)
+    return update_battery(info, is_blank, next_phases)
   end)
 end
 
