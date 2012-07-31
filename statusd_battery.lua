@@ -6,7 +6,9 @@ local defaults = {
       charging    = {  0,   0,   6, 100},
       discharging = { 12,  25,  50, 100},
   },
-  blink_pattern = {125, 250, 125, 1500}
+  blink_pattern = {125, 250, 125, 1500},
+  info_format = "%.f%% %s",
+  content_format = "[ %s ]",
 }
 local settings = table.join(statusd.get_config('battery'), defaults)
 
@@ -45,7 +47,7 @@ local function get_info()
   local threshold = effective_threshold(status, percentage)
   local info, hint, blink = "", 'normal', false
   if threshold then
-    info = string.format("%.f%% %s", percentage, status)
+    info = settings.info_format:format(percentage, status)
     if threshold == 'blink' then
       hint = 'critical'
       blink = true
@@ -57,8 +59,7 @@ local function get_info()
 end
 
 local function render_content(info, is_blank)
-  return string.format(
-    "[ %s ]",
+  return settings.content_format:format(
     is_blank and string.rep(" ", info:len()) or info
   )
 end
