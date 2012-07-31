@@ -22,9 +22,9 @@ SOFTWARE.
 
 
 Created as a replacement for various outdated scripts, in particular
-for statusd_linuxbatt. It provides very flexible configuration - say, it's
-possible to resemble default statusd_linuxbatt behavuior using following
-settings:
+for statusd_linuxbatt [1]. It provides very flexible configuration - say,
+it is possible to resemble default statusd_linuxbatt behaviuor using
+following settings:
 
   settings = {
     info_data = {'percentage'},
@@ -75,6 +75,8 @@ settings will provide following features:
     71.8%, 71.814%... and so on.
   
 Please follow to settings description below for futher details.
+
+[1] http://folk.ntnu.no/bronner/temp/ion3/repos/ion-scripts-3/statusd/statusd_linuxbatt.lua
 
 ]]
 local defaults = {
