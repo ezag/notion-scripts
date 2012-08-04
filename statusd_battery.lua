@@ -259,6 +259,7 @@ function update_battery(old_info, is_blank, next_phases)
   local info, hint, should_blink, status = get_info()
   should_blink = should_blink or settings.blink_on_discharge and
                  status == 'discharging' and old_info and info ~= old_info
+                 and hint == 'critical'
   if should_blink and #next_phases == 0 then
     for k, v in ipairs(settings.blink_pattern) do next_phases[k] = v end
   end
